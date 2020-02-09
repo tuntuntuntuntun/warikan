@@ -1,0 +1,119 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\User;
+use App\Bill;
+use Illuminate\Http\Request;
+
+class BillController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        $users = User::all();
+        $bills = Bill::all();
+
+
+        // $bill->to_user_idを配列に
+        foreach ($bills as $bill) {
+            $to_user_ids = explode(',', $bill->to_user_id);
+        }
+
+        // 割り勘相手の$user->nameを配列に
+        foreach ($to_user_ids as $to_user_id) {
+            foreach ($users as $user) {
+                if ($to_user_id == $user->id) {
+                    $to_user_names[] = $user->name;
+                }
+            }
+        }
+
+
+        // 割る人数を求める
+        $count_people = count($to_user_names) + 1;
+
+        // いくら支払ってもらう必要があるかをもとめる
+        $receive = 0;
+
+        foreach ($bills as $bill) {
+            $receive += $bill->total / $count_people;
+        }
+
+        return view('bill/index', [
+            'bills' => $bills,
+            'to_user_names' => $to_user_names,
+            'receive' => $receive,
+        ]);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        //
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
+    }
+}
