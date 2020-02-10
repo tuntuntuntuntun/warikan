@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\User;
 use App\Bill;
+use App\Http\Requests\CreateBill;
 use Illuminate\Http\Request;
 
 class BillController extends Controller
@@ -58,7 +59,11 @@ class BillController extends Controller
      */
     public function create()
     {
-        //
+        $users = User::all();
+
+        return view('bill/create', [
+            'users' => $users,
+        ]);
     }
 
     /**
@@ -67,9 +72,23 @@ class BillController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(CreateBill $request)
     {
-        //
+        //ここに作成処理を書く
+        // チェックボックスから取得したidはカンマで繋げてデータベースに入れる
+        $bill = new Bill();
+
+        $bill->title = $request->title;
+        $bill->total = $request->total;
+
+        // 配列を文字列に変換
+        $request->to_user_id = implode(',', $request->to_user_id);
+
+        $bill->to_user_id = $request->to_user_id;
+
+        $bill->save();
+
+        return redirect()->route('bill.index');
     }
 
     /**
