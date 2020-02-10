@@ -15,7 +15,6 @@ class BillsTableSeeder extends Seeder
     {
         foreach (range(1,5) as $num) {
             DB::table('bills')->insert([
-                'user_id' => 1,
                 'to_user_id' => '2,3,4',
                 'title' => "{$num}00gの豚肉と醤油、みりんを買いました",
                 'total' => 400,
