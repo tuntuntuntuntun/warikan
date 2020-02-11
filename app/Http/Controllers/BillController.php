@@ -6,6 +6,7 @@ use App\User;
 use App\Bill;
 use App\Http\Requests\CreateBill;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BillController extends Controller
 {
@@ -74,12 +75,12 @@ class BillController extends Controller
      */
     public function store(CreateBill $request)
     {
-        //ここに作成処理を書く
-        // チェックボックスから取得したidはカンマで繋げてデータベースに入れる
+        $user = new User();
         $bill = new Bill();
 
         $bill->title = $request->title;
         $bill->total = $request->total;
+        $bill->user_id = Auth::id();
 
         // 配列を文字列に変換
         $request->to_user_id = implode(',', $request->to_user_id);
