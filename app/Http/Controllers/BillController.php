@@ -34,7 +34,6 @@ class BillController extends Controller
             }
         }
 
-
         // 割る人数を求める
         $count_people = count($to_user_names) + 1;
 
@@ -74,7 +73,6 @@ class BillController extends Controller
      */
     public function store(CreateBill $request)
     {
-        //ここに作成処理を書く
         // チェックボックスから取得したidはカンマで繋げてデータベースに入れる
         $bill = new Bill();
 
@@ -99,7 +97,7 @@ class BillController extends Controller
      */
     public function show($id)
     {
-        //
+        return redirect()->route('bill.index');
     }
 
     /**
@@ -108,9 +106,21 @@ class BillController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Bill $bill)
     {
-        //
+        $bills = Bill::all();
+        $users = User::all();
+
+        // $bill->to_user_idを配列に
+        foreach ($bills as $bill) {
+            $to_user_ids = explode(',', $bill->to_user_id);
+        }
+
+        return view('bill/edit', [
+            'users' => $users,
+            'bill' => $bill,
+            'to_user_ids' => $to_user_ids,
+        ]);
     }
 
     /**
@@ -120,9 +130,19 @@ class BillController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Bill $bill)
     {
-        //
+        $bill->title = $request->title;
+        $bill->total = $request->total;
+
+        // 配列を文字列に変換
+        $request->to_user_id = implode(',', $request->to_user_id);
+        
+        $bill->to_user_id = $request->to_user_id;
+
+        $bill->save();
+
+        return redirect()->route('bill.index');
     }
 
     /**
