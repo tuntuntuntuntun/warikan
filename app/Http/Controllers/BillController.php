@@ -73,7 +73,6 @@ class BillController extends Controller
      */
     public function store(CreateBill $request)
     {
-        // チェックボックスから取得したidはカンマで繋げてデータベースに入れる
         $bill = new Bill();
 
         $bill->title = $request->title;
