@@ -26,10 +26,7 @@
             </div>
         </nav>
     </header>
-<<<<<<< HEAD
 
-=======
->>>>>>> 4f19f01d48337177edf0ab995c53a80422b3e506
     @yield('content')
 
 @if(Auth::check())

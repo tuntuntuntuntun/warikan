@@ -11,8 +11,10 @@
 |
 */
 
-Route::get('/', 'HomeController@index')->name('home');
-
-Route::resource('/bill', 'BillController');
+Route::group(['middleware' => 'auth'], function() {
+    Route::get('/', 'HomeController@index')->name('home');
+    
+    Route::resource('/bill', 'BillController');
+});
 
 Auth::routes();
