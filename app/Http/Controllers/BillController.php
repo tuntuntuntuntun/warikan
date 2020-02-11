@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\User;
 use App\Bill;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BillController extends Controller
 {
@@ -41,7 +42,9 @@ class BillController extends Controller
         $receive = 0;
 
         foreach ($bills as $bill) {
-            $receive += $bill->total / $count_people;
+            if (Auth::id() === $bill->user_id) {
+                $receive += round($bill->total / $count_people);
+            }
         }
 
         return view('bill/index', [
