@@ -11,4 +11,8 @@
 |
 */
 
+Route::get('/', 'HomeController@index')->name('home');
+
 Route::resource('/bill', 'BillController');
+
+Auth::routes();

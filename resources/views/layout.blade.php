@@ -8,6 +8,37 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
+    <header>
+        <nav class="mb-4 navbar navbar-expand-lg navbar-light bg-light">
+            <a href="{{ route('bill.index') }}" class="my-navbar-brand">Warikan</a>
+            <div class="my-navbar-control">
+                @if(Auth::check())
+                    <span class="my-navbar-item">ようこそ、{{ Auth::user()->name }}</span>
+                    |
+                    <a href="#" id="logout" class="my-navbar-item">ログアウト</a>
+                    <form  action="{{ route('logout') }}" id="logout-form" method="post" style="display:none;">
+                        @csrf
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="my-navbar-item">ログイン</a>
+                    <a href="{{ route('register') }}" class="my-navbar-item">会員登録</a>
+                @endif
+            </div>
+        </nav>
+    </header>
+<<<<<<< HEAD
+
+=======
+>>>>>>> 4f19f01d48337177edf0ab995c53a80422b3e506
     @yield('content')
+
+@if(Auth::check())
+    <script>
+        document.getElementById('logout').addEventListener('click', function(event) {
+            event.preventDefault();
+            document.getElementById('logout-form').submit();
+        });
+    </script>
+@endif
 </body>
 </html>
