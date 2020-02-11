@@ -79,14 +79,14 @@ class BillController extends Controller
 
         $bill->title = $request->title;
         $bill->total = $request->total;
-        $bill->user_id = Auth::id();
+        // $bill->user_id = Auth::id();
 
         // 配列を文字列に変換
         $request->to_user_id = implode(',', $request->to_user_id);
 
         $bill->to_user_id = $request->to_user_id;
 
-        $bill->save();
+        Auth::user()->bills()->save($bill);
 
         return redirect()->route('bill.index');
     }
