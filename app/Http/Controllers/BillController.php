@@ -75,7 +75,6 @@ class BillController extends Controller
      */
     public function store(CreateBill $request)
     {
-        $user = new User();
         $bill = new Bill();
 
         $bill->title = $request->title;
