@@ -13,6 +13,8 @@ class BillsTableSeeder extends Seeder
      */
     public function run()
     {
+        $user = DB::table('users')->first();
+        
         foreach (range(1,5) as $num) {
             DB::table('bills')->insert([
                 'to_user_id' => '2,3,4',
@@ -20,6 +22,7 @@ class BillsTableSeeder extends Seeder
                 'total' => 400,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
+                'user_id' => $user->id,
             ]);
         }
     }

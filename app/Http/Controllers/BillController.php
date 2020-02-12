@@ -6,6 +6,7 @@ use App\User;
 use App\Bill;
 use App\Http\Requests\CreateBill;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BillController extends Controller
 {
@@ -42,7 +43,9 @@ class BillController extends Controller
         $receive = 0;
 
         foreach ($bills as $bill) {
-            $receive += $bill->total / $count_people;
+            if (Auth::id() === $bill->user_id) {
+                $receive += round($bill->total / $count_people);
+            }
         }
 
         return view('bill/index', [
@@ -74,18 +77,18 @@ class BillController extends Controller
      */
     public function store(CreateBill $request)
     {
-        // チェックボックスから取得したidはカンマで繋げてデータベースに入れる
         $bill = new Bill();
 
         $bill->title = $request->title;
         $bill->total = $request->total;
+
 
         // 配列を文字列に変換
         $request->to_user_id = implode(',', $request->to_user_id);
 
         $bill->to_user_id = $request->to_user_id;
 
-        $bill->save();
+        Auth::user()->bills()->save($bill);
 
         return redirect()->route('bill.index');
     }

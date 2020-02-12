@@ -13,7 +13,7 @@
                 </div>
             @endif
             <form action="{{ route('bill.store') }}" method="post">
-                @csrf
+                @csrf   
                 <div class="form-group">
                     <label for="title">タイトル</label>
                     <input type="text" id="title" name="title" class="form-control" value="{{ old('title') }}">
