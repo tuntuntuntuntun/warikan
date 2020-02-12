@@ -25,8 +25,10 @@
                 <div class="form-group">
                     <p>割り勘をするユーザー</p>
                     @foreach($users as $user)
-                        <input type="checkbox" id="{{ $user->id }}" name="to_user_id[]" value="{{ $user->id }}">
-                        <label for="{{ $user->id }}">{{ $user->name }}</label>
+                        @if(Auth::id() !== $user->id)
+                            <input type="checkbox" id="{{ $user->id }}" name="to_user_id[]" value="{{ $user->id }}">
+                            <label for="{{ $user->id }}">{{ $user->name }}</label>
+                        @endif
                     @endforeach
                 </div>
                 <div class="text-center">
