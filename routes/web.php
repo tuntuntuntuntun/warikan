@@ -13,8 +13,12 @@
 
 Route::group(['middleware' => 'auth'], function() {
     Route::get('/', 'HomeController@index')->name('home');
+
+    Route::resource('/bill', 'BillController', ['only' => ['index', 'create', 'store']]);
     
-    Route::resource('/bill', 'BillController');
+    Route::group(['middleware' => 'can:view,bill'], function() {
+        Route::resource('/bill', 'BillController', ['only' => ['edit', 'update', 'destroy']]);
+    });
 });
 
 Auth::routes();
