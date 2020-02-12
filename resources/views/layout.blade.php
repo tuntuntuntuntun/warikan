@@ -10,7 +10,11 @@
 <body>
     <header>
         <nav class="mb-4 navbar navbar-expand-lg navbar-light bg-light">
-            <a href="{{ route('bill.index') }}" class="my-navbar-brand">Warikan</a>
+            <div class="my-navbar-control">
+                <a href="{{ route('bill.index') }}" class="my-navbar-brand">Warikan</a>
+                |
+                <a href="{{ route('bill.create') }}"　class="my-navbar-brand">割り勘をする</a>
+            </div>
             <div class="my-navbar-control">
                 @if(Auth::check())
                     <span class="my-navbar-item">ようこそ、{{ Auth::user()->name }}</span>
@@ -26,6 +30,7 @@
             </div>
         </nav>
     </header>
+
     @yield('content')
 
 @if(Auth::check())
