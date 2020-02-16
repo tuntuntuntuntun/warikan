@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\User;
 use App\Bill;
+use App\PaymentUser;
 use App\Http\Requests\CreateBill;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,39 +18,37 @@ class BillController extends Controller
      */
     public function index()
     {
-        $users = User::all();
         $bills = Bill::all();
+        $payment_users = PaymentUser::all();
 
 
-        // $bill->to_user_idを配列に
-        foreach ($bills as $bill) {
-            $to_user_ids = explode(',', $bill->to_user_id);
-        }
+        if (!$bills->isEmpty()) {
+            $receive = 0;
 
-        // 割り勘相手の$user->nameを配列に
-        foreach ($to_user_ids as $to_user_id) {
-            foreach ($users as $user) {
-                if ($to_user_id == $user->id) {
-                    $to_user_names[] = $user->name;
+            // 受け取る金額を求める
+            foreach ($bills as $bill) {
+                // ログインユーザーののみ計算
+                if ($bill->user_id === Auth::id()) {
+                    $count_user = PaymentUser::where('bill_id', $bill->id)->count();
+    
+                    $count_people = $count_user + 1;
+    
+                    $receive += round($bill->total / $count_people);
                 }
             }
+
+            
         }
 
-        // 割る人数を求める
-        $count_people = count($to_user_names) + 1;
 
-        // いくら支払ってもらう必要があるかをもとめる
-        $receive = 0;
-
+        // 割り勘をした相手を求める      
         foreach ($bills as $bill) {
-            if (Auth::id() === $bill->user_id) {
-                $receive += round($bill->total / $count_people);
-            }
+            $payment_users = PaymentUser::all();
         }
 
         return view('bill/index', [
+            'payment_users' => $payment_users,
             'bills' => $bills,
-            'to_user_names' => $to_user_names,
             'receive' => $receive,
         ]);
     }
@@ -80,14 +79,13 @@ class BillController extends Controller
 
         $bill->title = $request->title;
         $bill->total = $request->total;
-
-
-        // 配列を文字列に変換
-        $request->to_user_id = implode(',', $request->to_user_id);
-
-        $bill->to_user_id = $request->to_user_id;
+        $bill->payment_users()->bill_id = $bill->id;
 
         Auth::user()->bills()->save($bill);
+
+        foreach ($request->to_user_id as $user_id) {
+            PaymentUser::create(['bill_id' => $bill->id, 'user_id' => $user_id]);
+        }
 
         return redirect()->route('bill.index');
     }
@@ -114,9 +112,8 @@ class BillController extends Controller
         $bills = Bill::all();
         $users = User::all();
 
-        // $bill->to_user_idを配列に
         foreach ($bills as $bill) {
-            $to_user_ids = explode(',', $bill->to_user_id);
+            $to_user_ids[] = $bill->user_id;
         }
 
         return view('bill/edit', [
@@ -137,9 +134,6 @@ class BillController extends Controller
     {
         $bill->title = $request->title;
         $bill->total = $request->total;
-
-        // 配列を文字列に変換
-        $request->to_user_id = implode(',', $request->to_user_id);
         
         $bill->to_user_id = $request->to_user_id;
 

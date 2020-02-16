@@ -12,8 +12,10 @@
                             <p class="card-text">{{ $bill->title }}</p>
                             <p class="card-text">合計: {{ $bill->total }}円</p>
                             <p class="card-text">割り勘をした相手: 
-                                @foreach($to_user_names as $to_user_name)
-                                    {{ $to_user_name }}
+                                @foreach($payment_users as $payment_user)
+                                    @if($bill->id === $payment_user->bill_id)
+                                        {{ $payment_user->user->name }}
+                                    @endif
                                 @endforeach
                             </p>
                         </div>
