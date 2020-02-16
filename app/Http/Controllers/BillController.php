@@ -33,7 +33,7 @@ class BillController extends Controller
     
                     $count_people = $count_user + 1;
     
-                    $receive += round($bill->total / $count_people);
+                    $receive += round($bill->total - $bill->total / $count_people);
                 }
             }
 
