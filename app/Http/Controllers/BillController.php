@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\User;
 use App\Bill;
+use App\PaymentUser;
 use App\Http\Requests\CreateBill;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,40 +20,94 @@ class BillController extends Controller
     {
         $users = User::all();
         $bills = Bill::all();
+        $payment_users = PaymentUser::all();
 
 
-        // $bill->to_user_idを配列に
-        foreach ($bills as $bill) {
-            $to_user_ids = explode(',', $bill->to_user_id);
-        }
+        if (!$bills->isEmpty()) {
+            // 初期化
+            $receive = 0;
 
-        // 割り勘相手の$user->nameを配列に
-        foreach ($to_user_ids as $to_user_id) {
-            foreach ($users as $user) {
-                if ($to_user_id == $user->id) {
-                    $to_user_names[] = $user->name;
+            // 受け取る金額を求める
+            foreach ($bills as $bill) {
+                // ログインユーザーののみ計算
+                if ($bill->user_id === Auth::id()) {
+                    $count_user = PaymentUser::where('bill_id', $bill->id)->count();
+    
+                    $count_people = $count_user + 1;
+    
+                    $receive += round($bill->total - $bill->total / $count_people);
+                }
+            }
+
+
+            // 支払う金額
+            foreach ($payment_users as $payment_user) {
+                if ($payment_user->user_id === Auth::id()) {
+                    // お金を払ってもらったbillのidを取得
+                    $my_bills[] = Bill::where('id', $payment_user->bill_id)->get();
+                }
+            }
+
+            // 初期化
+            foreach ($bills as $bill) {
+                foreach ($my_bills as $my_bill) {
+                    if ($my_bill[0]->id === $bill->id) {
+                        $to_user[$my_bill[0]->user_id] = 0;
+                    }
+                }
+            }
+
+            foreach ($bills as $bill) {
+                foreach ($my_bills as $my_bill) {
+                    if ($my_bill[0]->id === $bill->id) {
+                        // 参加した割り勘の人数を求める
+                        $num_of_people = PaymentUser::where('bill_id', $my_bill[0]->id)->count() + 1;
+
+                        // その割り勘で支払う金額を求める
+                        $should_pay = round($bill->total / $num_of_people);
+
+                        // user_idをキーにした連想配列へ
+                        $to_user[$my_bill[0]->user_id] += $should_pay;
+
+                    }
                 }
             }
         }
 
-
-        // 割る人数を求める
-        $count_people = count($to_user_names) + 1;
-
-        // いくら支払ってもらう必要があるかをもとめる
-        $receive = 0;
-
+        // 割り勘をした相手を求める      
         foreach ($bills as $bill) {
-            if (Auth::id() === $bill->user_id) {
-                $receive += round($bill->total / $count_people);
-            }
+            $payment_users = PaymentUser::all();
         }
 
-        return view('bill/index', [
-            'bills' => $bills,
-            'to_user_names' => $to_user_names,
-            'receive' => $receive,
-        ]);
+        
+        $duplication = 0;
+        foreach ($my_bills as $my_bill) {
+            if($my_bill[0]->user_id === $duplication) {
+                $my_payments[] = $my_bill;
+            }
+            $duplication = $my_bill[0]->user_id;
+        };
+
+        
+        if (isset($my_payments)) {
+            return view('bill/index', [
+                'users' => $users,
+                'bills' => $bills,
+                'receive' => $receive,
+                'to_user' => $to_user,
+                'payment_users' => $payment_users,
+                'my_payments' => $my_payments,
+            ]);
+        } else {
+            return view('bill/index', [
+                'users' => $users,
+                'bills' => $bills,
+                'receive' => $receive,
+                'to_user' => $to_user,
+                'payment_users' => $payment_users,
+                'my_bills' => $my_bills,
+            ]);
+        }
     }
 
     /**
@@ -81,14 +136,13 @@ class BillController extends Controller
 
         $bill->title = $request->title;
         $bill->total = $request->total;
-
-
-        // 配列を文字列に変換
-        $request->to_user_id = implode(',', $request->to_user_id);
-
-        $bill->to_user_id = $request->to_user_id;
+        $bill->payment_users()->bill_id = $bill->id;
 
         Auth::user()->bills()->save($bill);
+
+        foreach ($request->to_user_id as $user_id) {
+            PaymentUser::create(['bill_id' => $bill->id, 'user_id' => $user_id]);
+        }
 
         return redirect()->route('bill.index');
     }
@@ -101,7 +155,7 @@ class BillController extends Controller
      */
     public function show($id)
     {
-        //
+        return redirect()->route('bill.index');
     }
 
     /**
@@ -110,9 +164,20 @@ class BillController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Bill $bill)
     {
-        //
+        $bills = Bill::all();
+        $users = User::all();
+
+        foreach ($bills as $bill) {
+            $to_user_ids[] = $bill->user_id;
+        }
+
+        return view('bill/edit', [
+            'users' => $users,
+            'bill' => $bill,
+            'to_user_ids' => $to_user_ids,
+        ]);
     }
 
     /**
@@ -122,9 +187,16 @@ class BillController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Bill $bill)
     {
-        //
+        $bill->title = $request->title;
+        $bill->total = $request->total;
+        
+        $bill->to_user_id = $request->to_user_id;
+
+        $bill->save();
+
+        return redirect()->route('bill.index');
     }
 
     /**

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddUserIdToBills extends Migration
+class CreatePaymentUsersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,13 @@ class AddUserIdToBills extends Migration
      */
     public function up()
     {
-        Schema::table('bills', function (Blueprint $table) {
+        Schema::create('payment_users', function (Blueprint $table) {
+            $table->increments('id');
+            $table->integer('bill_id')->unsigned();
             $table->integer('user_id')->unsigned();
+            $table->timestamps();
 
+            $table->foreign('bill_id')->references('id')->on('bills');
             $table->foreign('user_id')->references('id')->on('users');
         });
     }
@@ -27,8 +31,6 @@ class AddUserIdToBills extends Migration
      */
     public function down()
     {
-        Schema::table('bills', function (Blueprint $table) {
-            $table->dropColumn('user_id');
-        });
+        Schema::dropIfExists('payment_users');
     }
 }
