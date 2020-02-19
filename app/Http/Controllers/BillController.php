@@ -18,11 +18,13 @@ class BillController extends Controller
      */
     public function index()
     {
+        $users = User::all();
         $bills = Bill::all();
         $payment_users = PaymentUser::all();
 
 
         if (!$bills->isEmpty()) {
+            // 初期化
             $receive = 0;
 
             // 受け取る金額を求める
@@ -37,20 +39,75 @@ class BillController extends Controller
                 }
             }
 
-            
-        }
 
+            // 支払う金額
+            foreach ($payment_users as $payment_user) {
+                if ($payment_user->user_id === Auth::id()) {
+                    // お金を払ってもらったbillのidを取得
+                    $my_bills[] = Bill::where('id', $payment_user->bill_id)->get();
+                }
+            }
+
+            // 初期化
+            foreach ($bills as $bill) {
+                foreach ($my_bills as $my_bill) {
+                    if ($my_bill[0]->id === $bill->id) {
+                        $to_user[$my_bill[0]->user_id] = 0;
+                    }
+                }
+            }
+
+            foreach ($bills as $bill) {
+                foreach ($my_bills as $my_bill) {
+                    if ($my_bill[0]->id === $bill->id) {
+                        // 参加した割り勘の人数を求める
+                        $num_of_people = PaymentUser::where('bill_id', $my_bill[0]->id)->count() + 1;
+
+                        // その割り勘で支払う金額を求める
+                        $should_pay = round($bill->total / $num_of_people);
+
+                        // user_idをキーにした連想配列へ
+                        $to_user[$my_bill[0]->user_id] += $should_pay;
+
+                    }
+                }
+            }
+        }
 
         // 割り勘をした相手を求める      
         foreach ($bills as $bill) {
             $payment_users = PaymentUser::all();
         }
 
-        return view('bill/index', [
-            'payment_users' => $payment_users,
-            'bills' => $bills,
-            'receive' => $receive,
-        ]);
+        
+        $duplication = 0;
+        foreach ($my_bills as $my_bill) {
+            if($my_bill[0]->user_id === $duplication) {
+                $my_payments[] = $my_bill;
+            }
+            $duplication = $my_bill[0]->user_id;
+        };
+
+        
+        if (isset($my_payments)) {
+            return view('bill/index', [
+                'users' => $users,
+                'bills' => $bills,
+                'receive' => $receive,
+                'to_user' => $to_user,
+                'payment_users' => $payment_users,
+                'my_payments' => $my_payments,
+            ]);
+        } else {
+            return view('bill/index', [
+                'users' => $users,
+                'bills' => $bills,
+                'receive' => $receive,
+                'to_user' => $to_user,
+                'payment_users' => $payment_users,
+                'my_bills' => $my_bills,
+            ]);
+        }
     }
 
     /**
