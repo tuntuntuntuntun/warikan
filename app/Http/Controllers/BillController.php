@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Auth;
 
 class BillController extends Controller
 {
+    public function __construct(){
+      $this->middleware('can:update,bill')->only('edit', 'update');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -166,11 +170,14 @@ class BillController extends Controller
      */
     public function edit(Bill $bill)
     {
-        $bills = Bill::all();
         $users = User::all();
+        $payment_users = PaymentUser::all();
 
-        foreach ($bills as $bill) {
-            $to_user_ids[] = $bill->user_id;
+        // チェックボックスをcheckedにするため
+        foreach ($payment_users as $payment_user) {
+            if ($payment_user->bill_id === $bill->id) {
+                $to_user_ids[] = $payment_user->user_id;
+            }
         }
 
         return view('bill/edit', [
