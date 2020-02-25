@@ -196,12 +196,15 @@ class BillController extends Controller
      */
     public function update(Request $request, Bill $bill)
     {
-        $bill->title = $request->title;
-        $bill->total = $request->total;
-        
-        $bill->to_user_id = $request->to_user_id;
+        Bill::where('id', $bill->id)->update(['title' => $request->title]);
+        Bill::where('id', $bill->id)->update(['total' => $request->total]);
 
-        $bill->save();
+        // payment_usersテーブルを更新
+        PaymentUser::where('bill_id', $bill->id)->delete();
+        
+        foreach ($request->to_user_id as $user_id) {
+            PaymentUser::create(['bill_id' => $bill->id, 'user_id' => $user_id]);
+        }
 
         return redirect()->route('bill.index');
     }
