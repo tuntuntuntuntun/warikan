@@ -6,6 +6,7 @@ use App\User;
 use App\Bill;
 use App\PaymentUser;
 use App\Http\Requests\CreateBill;
+use App\Http\Requests\EditBill;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -194,14 +195,14 @@ class BillController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Bill $bill)
+    public function update(EditBill $request, Bill $bill)
     {
         Bill::where('id', $bill->id)->update(['title' => $request->title]);
         Bill::where('id', $bill->id)->update(['total' => $request->total]);
 
         // payment_usersテーブルを更新
         PaymentUser::where('bill_id', $bill->id)->delete();
-        
+
         foreach ($request->to_user_id as $user_id) {
             PaymentUser::create(['bill_id' => $bill->id, 'user_id' => $user_id]);
         }
