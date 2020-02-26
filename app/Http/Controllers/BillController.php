@@ -220,8 +220,13 @@ class BillController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Bill $bill)
     {
-        //
+        \DB::transaction(function() use ($bill) {
+            $bill->payment_users()->delete();
+            $bill->delete();
+        });
+
+        return redirect()->route('bill.index');
     }
 }

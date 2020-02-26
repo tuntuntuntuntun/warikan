@@ -33,9 +33,24 @@
                                 @endforeach
                             </p>
                         </div>
+                        <div class="d-flex">
+                            <a href="{{ route('bill.edit', ['bill' => $bill->id]) }}" class="btn">編集する</a>
+                            <a href="#" id="destroy" class="btn">削除する</a>
+                            <form id="destroy-form" action="{{ route('bill.destroy', ['bill' => $bill->id]) }}" method="post" style="display:none;">
+                                @csrf
+                                @method('delete')
+                            </form>
+                        </div>
                     </div>
                 @endif
             @endforeach
         </div>
     </main>
+
+    <script>
+        document.getElementById('destroy').addEventListener('click', function(event) {
+            event.preventDefault();
+            document.getElementById('destroy-form').submit();
+        });
+    </script>
 @endsection
