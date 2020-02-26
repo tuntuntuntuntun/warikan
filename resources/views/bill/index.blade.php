@@ -10,10 +10,12 @@
                     @foreach($my_payments as $my_payment)
                         <li>{{ $my_payment[0]->user->name }}: {{ $to_user[$my_payment[0]->user_id] }}円</li>
                     @endforeach
-                @else
+                @elseif(isset($my_bills))
                     @foreach($my_bills as $my_bill)
                         <li>{{ $my_bill[0]->user->name }}: {{ $to_user[$my_bill[0]->user_id] }}円</li>
                     @endforeach
+                @else
+                    <p>0円</p>
                 @endif
             </ul>
             @foreach($bills as $bill)
