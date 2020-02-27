@@ -88,7 +88,8 @@ class BillController extends Controller
             $payment_users = PaymentUser::all();
         }
 
-        
+
+        // 支払い相手が重複して表示されないため
         $duplication = 0;
         if (isset($my_bills)) {
             foreach ($my_bills as $my_bill) {
@@ -100,6 +101,7 @@ class BillController extends Controller
         }
 
         
+        // 重複する場合
         if (isset($my_payments)) {
             return view('bill/index', [
                 'users' => $users,
@@ -108,6 +110,15 @@ class BillController extends Controller
                 'to_user' => $to_user,
                 'payment_users' => $payment_users,
                 'my_payments' => $my_payments,
+            ]);
+        } elseif (isset($to_user) && isset($my_bills)) {
+            return view('bill/index', [
+                'users' => $users,
+                'bills' => $bills,
+                'receive' => $receive,
+                'to_user' => $to_user,
+                'payment_users' => $payment_users,
+                'my_bills' => $my_bills,
             ]);
         } else {
             return view('bill/index', [
